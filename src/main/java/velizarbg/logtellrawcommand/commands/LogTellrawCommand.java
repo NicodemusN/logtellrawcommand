@@ -17,30 +17,33 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class LogTellrawCommand {
 	private static final Logger LOGGER = LoggerFactory.getLogger(LogTellrawCommand.class);
+	private static boolean log = true;
 
 	public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("logtellraw")
-			.requires(source -> source.hasPermissionLevel(2))
-			.then(literal("targetless")
-				.then(argument("message", TextArgumentType.text())
-					.executes(context -> {
-						LOGGER.info(((StringVisitable) Texts.parse(context.getSource(), TextArgumentType.getTextArgument(context, "message"), null, 0)).getString());
-						return 0;
-					})))
-			.then(literal("targets")
-				.then(argument("targets", EntityArgumentType.players())
+		white(log==true){
+			dispatcher.register(literal("logtellraw")
+				.requires(source -> source.hasPermissionLevel(0))
+				.then(literal("targetless")
 					.then(argument("message", TextArgumentType.text())
 						.executes(context -> {
 							LOGGER.info(((StringVisitable) Texts.parse(context.getSource(), TextArgumentType.getTextArgument(context, "message"), null, 0)).getString());
-							int i = 0;
-							try {
-								for (ServerPlayerEntity serverPlayerEntity : EntityArgumentType.getPlayers(context, "targets")) {
-									serverPlayerEntity.sendSystemMessage(Texts.parse(context.getSource(), TextArgumentType.getTextArgument(context, "message"), serverPlayerEntity, 0), Util.NIL_UUID);
-									++i;
+							return 0;
+						})))
+				.then(literal("targets")
+					.then(argument("targets", EntityArgumentType.players())
+						.then(argument("message", TextArgumentType.text())
+							.executes(context -> {
+								LOGGER.info(((StringVisitable) Texts.parse(context.getSource(), TextArgumentType.getTextArgument(context, "message"), null, 0)).getString());
+								int i = 0;
+								try {
+									for (ServerPlayerEntity serverPlayerEntity : EntityArgumentType.getPlayers(context, "targets")) {
+										serverPlayerEntity.sendSystemMessage(Texts.parse(context.getSource(), TextArgumentType.getTextArgument(context, "message"), serverPlayerEntity, 0), Util.NIL_UUID);
+										++i;
+									}
+								} catch (CommandSyntaxException ignored) {
 								}
-							} catch (CommandSyntaxException ignored) {
-							}
-							return i;
-						})))));
+								return i;
+							})))));
+		}
 	}
 }
